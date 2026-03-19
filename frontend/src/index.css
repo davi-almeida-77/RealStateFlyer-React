@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #f0f0ec;
+    color: #111111;
+    overflow-x: hidden;
+    cursor: none;
+  }
+  img { display: block; max-width: 100%; }
+  a { text-decoration: none; color: inherit; }
+}
