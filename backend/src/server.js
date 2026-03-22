@@ -12,7 +12,7 @@ app.use(express.json())
 app.use('/api/properties', propertiesRouter)
 
 app.get('/', (_req, res) => {
-  res.json({ message: 'City Arcade API 🏙️', version: '1.0.0' })
+  res.json({ message: 'RealStateFlyer API ', version: '1.0.0' })
 })
 
 app.use((_req, res) => {
@@ -20,5 +20,5 @@ app.use((_req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`\n🏙️  City Arcade API → http://localhost:${PORT}\n`)
+  console.log(`\n RealStateFlyer API → http://localhost:${PORT}\n`)
 })
