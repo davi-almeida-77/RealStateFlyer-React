@@ -12,6 +12,7 @@ export default function ListingsLayout({ pageType, title, subtitle, properties }
 
   const [selected,         setSelected]        = useState(null)
   const [showNeighborhood, setShowNeighborhood] = useState(false)
+  const [closing,          setClosing]          = useState(false)
   const [query,  setQuery]  = useState('')
   const [price,  setPrice]  = useState('Any Price')
   const [beds,   setBeds]   = useState('Any Beds')
@@ -37,11 +38,21 @@ export default function ListingsLayout({ pageType, title, subtitle, properties }
 
   // When selected changes: hide panel, wait for GTA animation, then show
   useEffect(() => {
-    setShowNeighborhood(false)
+    dismissPanel()
     if (!selected) return
     const id = setTimeout(() => setShowNeighborhood(true), 2400)
     return () => clearTimeout(id)
   }, [selected])
+
+  // Smooth slide-down dismiss (600ms) then unmount
+  function dismissPanel() {
+    if (!showNeighborhood) return
+    setClosing(true)
+    setTimeout(() => {
+      setShowNeighborhood(false)
+      setClosing(false)
+    }, 550)
+  }
 
   function handleSelect(prop) {
     if (selected?.id === prop.id) {
@@ -54,6 +65,11 @@ export default function ListingsLayout({ pageType, title, subtitle, properties }
 
   function handleViewProperty(id) {
     navigate('/property/' + id)
+  }
+
+  // Click map → slide panel down smoothly
+  function handleMapClick() {
+    if (showNeighborhood) dismissPanel()
   }
 
   return (
@@ -80,7 +96,7 @@ export default function ListingsLayout({ pageType, title, subtitle, properties }
         view={view} setView={setView} total={filtered.length}
       />
 
-      {/* Split layout — map is STICKY (respects layout flow, no filter overlap) */}
+      {/* Split layout */}
       <div style={{ display: 'flex', alignItems: 'flex-start' }}>
 
         {/* Grid */}
@@ -93,9 +109,10 @@ export default function ListingsLayout({ pageType, title, subtitle, properties }
           />
         </div>
 
-        {/* Map — sticky so it starts BELOW filters, not overlapping them */}
+        {/* Map — sticky, respects hero + filter layout */}
         <div
           className="listings-map-panel"
+          onClick={handleMapClick}
           style={{
             flex: '0 0 42%',
             position: 'sticky',
@@ -104,6 +121,7 @@ export default function ListingsLayout({ pageType, title, subtitle, properties }
             borderLeft: '1px solid rgba(255,255,255,0.06)',
             background: '#080808',
             overflow: 'hidden',
+            cursor: showNeighborhood ? 'pointer' : 'default',
           }}
         >
           <div style={{ position: 'absolute', inset: '12px', borderRadius: '12px', overflow: 'hidden' }}>
@@ -114,28 +132,26 @@ export default function ListingsLayout({ pageType, title, subtitle, properties }
 
       <Footer />
 
-      {/*
-        NeighborhoodInfo — FIXED independently to true viewport bottom-right.
-        Separate from map container so overflow:hidden doesn't clip the animation.
-        Mounts only when showNeighborhood=true (after 2400ms GTA animation).
-        @keyframes slideUpPanel drives the entrance animation.
-      */}
-      {showNeighborhood && selected && (
+      {/* NeighborhoodInfo — fixed to true viewport bottom, independent of map */}
+      {(showNeighborhood || closing) && selected && (
         <div
           className="listings-neighborhood-panel"
+          onClick={e => e.stopPropagation()}
           style={{
-            position: 'fixed',
-            bottom: 0,
-            right: 0,
-            width: '42%',
-            zIndex: 30,
-            padding: '0 12px 12px 12px',
-            animation: 'slideUpPanel 0.5s cubic-bezier(0.16,1,0.3,1) both',
+            position:  'fixed',
+            bottom:    0,
+            right:     0,
+            width:     '42%',
+            zIndex:    30,
+            padding:   '0 12px 12px 12px',
+            animation: closing
+              ? 'slideDownPanel 0.55s cubic-bezier(0.4,0,1,1) both'
+              : 'slideUpPanel   0.5s  cubic-bezier(0.16,1,0.3,1) both',
           }}
         >
           <NeighborhoodInfo
             prop={selected}
-            onClose={() => setShowNeighborhood(false)}
+            onClose={dismissPanel}
           />
         </div>
       )}
@@ -145,8 +161,12 @@ export default function ListingsLayout({ pageType, title, subtitle, properties }
           from { transform: translateY(100%); }
           to   { transform: translateY(0%);   }
         }
+        @keyframes slideDownPanel {
+          from { transform: translateY(0%);   }
+          to   { transform: translateY(100%); }
+        }
         @media (max-width: 768px) {
-          .listings-map-panel         { display: none !important; }
+          .listings-map-panel          { display: none !important; }
           .listings-neighborhood-panel { display: none !important; }
         }
       `}</style>
