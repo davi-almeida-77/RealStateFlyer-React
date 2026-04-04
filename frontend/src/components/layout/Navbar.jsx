@@ -6,18 +6,18 @@ import { useTheme } from '@/context/ThemeContext'
 
 const NAV_LINKS = [
   { label: 'HOME',      href: '/' },
-  { label: 'PROPERTIES',href: '/property/hamida-villa', active: true },
-  { label: 'BUY',       href: '#' },
-  { label: 'RENT',      href: '#' },
-  { label: 'BIO AGENT', href: '#' },
+  { label: 'BUY',       href: '/sale' },
+  { label: 'RENT',      href: '/rent' },
+  { label: 'BIO AGENT', href: '/agent' },
   { label: 'CONTACT',   href: '/contact' },
 ]
 
 export default function Navbar() {
-  const scrollY        = useScrollY()
-  const scrolled       = scrollY > 20
-  const [open, setOpen] = useState(false)
+  const scrollY          = useScrollY()
+  const scrolled         = scrollY > 20
+  const [open, setOpen]  = useState(false)
   const { dark, toggle } = useTheme()
+  const path = typeof window !== 'undefined' ? window.location.pathname : '/'
 
   useEffect(() => {
     const onResize = () => { if (window.innerWidth >= 768) setOpen(false) }
@@ -55,47 +55,45 @@ export default function Navbar() {
         </a>
 
         <ul className="hidden md:flex items-center gap-0.5 mx-auto list-none m-0 p-0">
-          {NAV_LINKS.map((link, i) => (
-            <li key={link.label} className="flex items-center">
-              <a href={link.href} data-hover
-                className="px-3 py-1.5 font-mono text-[11px] tracking-[0.08em] rounded-md transition-all duration-150"
-                style={{ color: link.active ? textStrong : textMuted, fontWeight: link.active ? 700 : 400 }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.color = textStrong
-                  e.currentTarget.style.background = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.color = link.active ? textStrong : textMuted
-                  e.currentTarget.style.background = 'transparent'
-                }}
-              >{link.label}</a>
-              {i < NAV_LINKS.length - 1 && (
-                <span style={{ color: textMuted, fontSize: '11px', opacity: 0.4, userSelect: 'none' }}>+</span>
-              )}
-            </li>
-          ))}
+          {NAV_LINKS.map((link, i) => {
+            const isActive = path === link.href
+            return (
+              <li key={link.label} className="flex items-center">
+                <a href={link.href} data-hover
+                  className="px-3 py-1.5 font-mono text-[11px] tracking-[0.08em] rounded-md transition-all duration-150"
+                  style={{ color: isActive ? textStrong : textMuted, fontWeight: isActive ? 700 : 400 }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.color = textStrong
+                    e.currentTarget.style.background = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.color = isActive ? textStrong : textMuted
+                    e.currentTarget.style.background = 'transparent'
+                  }}
+                >
+                  {link.label}
+                </a>
+                {i < NAV_LINKS.length - 1 && (
+                  <span style={{ color: textMuted, fontSize: '11px', opacity: 0.4, userSelect: 'none' }}>+</span>
+                )}
+              </li>
+            )
+          })}
         </ul>
 
         <div className="hidden md:flex items-center gap-2 ml-auto">
-          {/* Theme toggle — affects entire site via ThemeContext */}
-          <motion.button
-            data-hover aria-label="Toggle theme"
-            onClick={toggle}
+          <motion.button data-hover aria-label="Toggle theme" onClick={toggle}
             whileTap={{ scale: 0.88, rotate: 15 }}
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200"
-            style={{ border: '1px solid ' + border }}
-            title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
+            className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ border: '1px solid ' + border }}>
             <AnimatePresence mode="wait">
               {dark ? (
-                <motion.span key="sun"
-                  initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
+                <motion.span key="sun" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
                   exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.18 }}>
                   <Sun size={14} color={textStrong} />
                 </motion.span>
               ) : (
-                <motion.span key="moon"
-                  initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
+                <motion.span key="moon" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
                   exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.18 }}>
                   <Moon size={14} color={textStrong} />
                 </motion.span>
@@ -104,15 +102,15 @@ export default function Navbar() {
           </motion.button>
 
           <button data-hover aria-label="Search"
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200"
+            className="w-9 h-9 rounded-full flex items-center justify-center"
             style={{ border: '1px solid ' + border }}>
             <Search size={14} color={textStrong} />
           </button>
 
           <button data-hover
-            className="flex items-center gap-2 px-4 py-[7px] rounded-full font-mono text-[11px] tracking-[0.07em] transition-all duration-200"
+            className="flex items-center gap-2 px-4 py-[7px] rounded-full font-mono text-[11px] tracking-[0.07em]"
             style={{ border: '1px solid ' + border, color: textStrong }}>
-            <User size={13} />SIGN IN
+            <User size={13} /> SIGN IN
           </button>
         </div>
 
@@ -130,23 +128,24 @@ export default function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -14 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -14 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="fixed top-16 left-0 right-0 z-[99] px-6 py-5 flex flex-col gap-1"
             style={{ background: navBg, backdropFilter: 'blur(20px)', borderBottom: '1px solid ' + border }}
           >
-            {NAV_LINKS.map(link => (
-              <a key={link.label} href={link.href} onClick={() => setOpen(false)}
-                className="py-3 font-mono text-sm tracking-[0.1em]"
-                style={{ color: link.active ? textStrong : textMuted, fontWeight: link.active ? 700 : 400, borderBottom: '1px solid ' + border }}>
-                {link.label}
-              </a>
-            ))}
+            {NAV_LINKS.map(link => {
+              const isActive = path === link.href
+              return (
+                <a key={link.label} href={link.href} onClick={() => setOpen(false)}
+                  className="py-3 font-mono text-sm tracking-[0.1em]"
+                  style={{ color: isActive ? textStrong : textMuted, fontWeight: isActive ? 700 : 400, borderBottom: '1px solid ' + border }}>
+                  {link.label}
+                </a>
+              )
+            })}
             <div className="flex gap-3 pt-3 items-center">
-              <button onClick={toggle}
-                className="w-9 h-9 rounded-full flex items-center justify-center"
+              <button onClick={toggle} className="w-9 h-9 rounded-full flex items-center justify-center"
                 style={{ border: '1px solid ' + border }}>
                 {dark ? <Sun size={14} color={textStrong} /> : <Moon size={14} color={textStrong} />}
               </button>
